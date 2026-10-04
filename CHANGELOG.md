@@ -1,0 +1,15 @@
+# Changelog
+
+## 0.1.0
+- **Real ASCII art.** The banner is now an actual figlet wordmark (font "small", the same family PhantomTrace's own banner uses), coloured with a diagonal four-colour cycle through every character in the terminal — the same spirit as PhantomTrace's rainbow, in this author's newer Google-colour identity. `--pretty` frames the same wordmark in a box sized to fit it exactly.
+- **The live eBPF collector is now confirmed working on a real machine**, not just in theory: it attached, watched `/bin/true` run, and the kernel told RuntimeTrace about it.
+- `--pretty`: a boxed Unicode banner and a block-character severity bar, for demos and screenshots. The default report stays plain-ASCII and script-friendly.
+- **Findings are now grouped by check**, not printed one line each: a check firing a dozen times (a run of `gvfs` daemons after a package upgrade is the real example that motivated this) now reads as one group with a count and a few examples, not a wall of near-identical lines.
+- **Fixed a real cross-kernel compatibility bug, found by actually testing on a second machine:** the executed filename was read from the `sched_process_exec` tracepoint's kernel-generated struct, whose exact field layout turned out to differ across kernels (compiled fine here, failed with "no member named 'filename'" on another real machine, same BCC version). Fixed by not depending on it at all: only `pid` and `comm`, which proved stable, are read in the kernel; the executed path is now resolved in plain Python (`os.readlink(/proc/<pid>/exe)`) the instant the event arrives, the same technique procfs.py already uses elsewhere. This can race a process that exits in that instant (filename then reads as empty, silently, never a crash), a honest trade for working across more kernels without fragile, version-specific C.
+- **Fixed a crash in the default (coloured) report** when every finding was low-confidence (`verdict()` returned a colour name, "cyan", that the terminal palette never defined) — the single most common case on an ordinary machine, so this would have broken for most real users. An unrecognised colour name now degrades to plain text instead of ever raising.
+- CLI polish to match PhantomTrace: a coloured report (Google-colour severities, switches off for pipes/NO_COLOR/--no-color), a banner on --help, `--list-checks`, and a live "N exec events seen, Ns left" progress line on stderr during --watch.
+- **Exit code fix:** only high/medium findings now fail the exit code (0/1/2), matching PhantomTrace; a low-confidence-only run (the common case: a package upgrade left a '(deleted)' binary) correctly exits 0, so it never breaks a script.
+First release. Process-hiding and fileless-execution detection via a live eBPF watch window (needs root);
+hidden kernel modules, `/etc/ld.so.preload`, per-process `LD_PRELOAD` and deleted-but-running binaries
+detected with no root at all. Android support is scoped and explained, not yet implemented. See README for
+the two real false positives found and fixed while building this (module-hiding and LD_PRELOAD).

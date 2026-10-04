@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use RuntimeTrace, please credit it as below."
+title: "RuntimeTrace: a runtime cross-layer consistency checker for Linux"
+type: software
+authors:
+  - name: "Jack Sessions"
+repository-code: "https://github.com/JackSessions/runtime-trace"
+license: MIT
+version: 0.1.0
+date-released: 2026-10-04

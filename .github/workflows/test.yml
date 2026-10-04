@@ -1,0 +1,28 @@
+name: test
+on:
+  push:
+  pull_request:
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install build twine
+      - name: Unit tests (no BCC, no root: the pure comparison logic)
+        run: python -m unittest discover -s tests -v
+      - run: python -m build
+      - run: python -m twine check dist/*
+  with-bcc-and-root:
+    # Deliberately does NOT use actions/setup-python: that installs an isolated interpreter under
+    # /opt/hostedtoolcache that apt's python3-bpfcc knows nothing about. python3-bpfcc only lines up with
+    # the distro's own /usr/bin/python3, exactly the --system-site-packages caveat the README warns about.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the real BCC (a system package, not pip) for the distro's own python3
+        run: sudo apt-get update && sudo apt-get install -y python3-bpfcc
+      - name: Full suite as root, with BCC available (exercises the live collector)
+        run: sudo /usr/bin/python3 -m unittest discover -s tests -v

@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "runtime-trace"
+version = "0.1.0"
+description = "Runtime cross-layer consistency checker for Linux: eBPF-powered process/module hiding and fileless-execution detection for DFIR and blue teams"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+authors = [{ name = "Jack Sessions" }]
+keywords = ["dfir", "ebpf", "linux", "rootkit-detection", "incident-response", "blue-team", "forensics", "security-monitoring", "bcc"]
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Information Technology",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: System :: Monitoring",
+]
+# Deliberately NO install_requires for BCC: the "bcc" name on PyPI is an unrelated math package (an N-dimensional
+# lattice library), not the BPF Compiler Collection this tool actually needs. The real BCC only ships as a system
+# package (python3-bpfcc on Debian/Ubuntu, python3-bcc on Fedora, bcc-tools on Arch) because it bundles a
+# matching clang/LLVM and kernel-specific bits that pip cannot portably build. See the README before filing an
+# ImportError issue.
+
+[project.urls]
+Homepage = "https://github.com/JackSessions/runtime-trace"
+Source = "https://github.com/JackSessions/runtime-trace"
+Issues = "https://github.com/JackSessions/runtime-trace/issues"
+Changelog = "https://github.com/JackSessions/runtime-trace/blob/main/CHANGELOG.md"
+
+[project.scripts]
+runtime-trace = "runtime_trace.cli:main"
+
+[tool.setuptools]
+packages = ["runtime_trace"]

@@ -1,0 +1,37 @@
+name: publish
+# Publishes to PyPI when you create a GitHub Release. Uses PyPI "trusted publishing", so no API token is stored.
+# One-time setup on pypi.org: Your projects -> Publishing -> add a pending publisher
+#   owner JackSessions, repository runtime-trace, workflow publish.yml, environment pypi.
+#
+# No .pyz single-file build here (unlike this author's other two tools): RuntimeTrace needs the system
+# python3-bpfcc package regardless of how it is packaged, so a bundled single file would not add portability.
+on:
+  release:
+    types: [published]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install build twine
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
